@@ -46,14 +46,14 @@ func main() {
 
 	}
 
-	//jwtCecret := os.Getenv("JWT_SECRET")
+	jwtCecret := os.Getenv("JWT_SECRET")
 
-	tokenProvider := component.NewJWTProvider("very-important-please-change-it!",
+	tokenProvider := component.NewJWTProvider(jwtCecret,
 		60*60*24*7, 60*60*24*24)
 
 	//userUC := usecase.NewUseCase(repository.NewUserRepo(db), repository.NewSessionMySQLRepo(db), &common.Hasher{}, tokenProvider)
 
-	userUseCase := usecase.UseCaseWithBuilder(builder.NewSimpleBuilder(db, tokenProvider))
+	userUseCase := usecase.UseCaseWithBuilder(builder.NewComplexBuilder(builder.NewSimpleBuilder(db, tokenProvider)))
 
 	httpservice.NewUserService(userUseCase).Routes(v1)
 
