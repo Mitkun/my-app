@@ -59,7 +59,7 @@ type userCacheRepo struct {
 }
 
 func (c userCacheRepo) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
-	if user, ok := cc.cache[email]; ok {
+	if user, ok := c.cache[email]; ok {
 		return user, nil
 	}
 
