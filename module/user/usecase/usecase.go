@@ -9,20 +9,30 @@ import (
 
 type UseCase interface {
 	Register(ctx context.Context, dto EmailPasswordRegistrationDTO) error
+	LoginEmailPassword(ctx context.Context, dto EmailPasswordLoginDTO) (*TokenResponseDTO, error)
 }
 
 type Hashes interface {
 	RandomStr(length int) (string, error)
 	HashPassword(salt, password string) (string, error)
+	CompareHashPassword(hashedPassword, salt, password string) bool
+}
+
+type TokenProvider interface {
+	IssueToken(ctx context.Context, id, sub string) (token string, err error)
+	TokenExpireInSeconds() int
+	RefreshExpireInSeconds() int
 }
 
 type useCase struct {
-	repo   UserRepository
-	hashes Hashes
+	uerRepo       UserRepository
+	sessionRepo   SessionRepository
+	hashes        Hashes
+	tokenProvider TokenProvider
 }
 
-func NewUseCase(repo UserRepository, hashes Hashes) UseCase {
-	return &useCase{repo: repo, hashes: hashes}
+func NewUseCase(userRepo UserRepository, sessionRepo SessionRepository, hashes Hashes, tokenProvider TokenProvider) UseCase {
+	return &useCase{uerRepo: userRepo, sessionRepo: sessionRepo, hashes: hashes, tokenProvider: tokenProvider}
 }
 
 func (uc *useCase) Register(ctx context.Context, dto EmailPasswordRegistrationDTO) error {
@@ -32,7 +42,7 @@ func (uc *useCase) Register(ctx context.Context, dto EmailPasswordRegistrationDT
 	// 3. hash password + salt
 	// 4. Create user entity
 
-	user, err := uc.repo.FindByEmail(ctx, dto.Email)
+	user, err := uc.uerRepo.FindByEmail(ctx, dto.Email)
 	if user != nil {
 		return domain.ErrEmailHasExisted
 	}
@@ -64,7 +74,7 @@ func (uc *useCase) Register(ctx context.Context, dto EmailPasswordRegistrationDT
 		return err
 	}
 
-	if err := uc.repo.Create(ctx, userEntity); err != nil {
+	if err := uc.uerRepo.Create(ctx, userEntity); err != nil {
 		return err
 	}
 
@@ -77,4 +87,8 @@ type UserRepository interface {
 	Create(ctx context.Context, data *domain.User) error
 	//Update(ctx context.Context, data *domain.User) error
 	//Delete(ctx context.Context, data *domain.User) error
+}
+
+type SessionRepository interface {
+	Create(ctx context.Context, data *domain.Session) error
 }
