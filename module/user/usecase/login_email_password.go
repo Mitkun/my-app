@@ -7,9 +7,20 @@ import (
 	"time"
 )
 
-func (uc *useCase) LoginEmailPassword(ctx context.Context, dto EmailPasswordLoginDTO) (*TokenResponseDTO, error) {
+type loginEmailPasswordUC struct {
+	userRepo      UserQueryRepository
+	sessionRepo   SessionCommandRepository
+	tokenProvider TokenProvider
+	hashes        Hashes
+}
+
+func NewLoginEmailPasswordUC(userRepo UserQueryRepository, sessionRepo SessionCommandRepository, tokenProvider TokenProvider, hashes Hashes) *loginEmailPasswordUC {
+	return &loginEmailPasswordUC{userRepo: userRepo, sessionRepo: sessionRepo, tokenProvider: tokenProvider, hashes: hashes}
+}
+
+func (uc *loginEmailPasswordUC) LoginEmailPassword(ctx context.Context, dto EmailPasswordLoginDTO) (*TokenResponseDTO, error) {
 	// 1. Find user by email
-	user, err := uc.uerRepo.FindByEmail(ctx, dto.Email)
+	user, err := uc.userRepo.FindByEmail(ctx, dto.Email)
 	if err != nil {
 		return nil, err
 	}

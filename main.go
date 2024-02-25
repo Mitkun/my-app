@@ -5,13 +5,12 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"
-	"my-app/common"
+	"my-app/builder"
 	"my-app/component"
 	"my-app/module/product/controller"
 	productusecase "my-app/module/product/domain/usecase"
 	productmysql "my-app/module/product/repository/mysql"
 	"my-app/module/user/infras/httpservice"
-	"my-app/module/user/infras/repository"
 	"my-app/module/user/usecase"
 	"net/http"
 	"os"
@@ -47,11 +46,16 @@ func main() {
 
 	}
 
+	//jwtCecret := os.Getenv("JWT_SECRET")
+
 	tokenProvider := component.NewJWTProvider("very-important-please-change-it!",
 		60*60*24*7, 60*60*24*24)
 
-	userUC := usecase.NewUseCase(repository.NewUserRepo(db), repository.NewSessionMySQLRepo(db), &common.Hasher{}, tokenProvider)
-	httpservice.NewUserService(userUC).Routes(v1)
+	//userUC := usecase.NewUseCase(repository.NewUserRepo(db), repository.NewSessionMySQLRepo(db), &common.Hasher{}, tokenProvider)
+
+	userUseCase := usecase.UseCaseWithBuilder(builder.NewSimpleBuilder(db, tokenProvider))
+
+	httpservice.NewUserService(userUseCase).Routes(v1)
 
 	r.Run(":3000") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
