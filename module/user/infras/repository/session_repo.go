@@ -2,7 +2,10 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"my-app/common"
 	"my-app/module/user/domain"
 )
 
@@ -26,4 +29,18 @@ func (repo sessionMySQLRepo) Create(ctx context.Context, data *domain.Session) e
 	}
 
 	return repo.db.Table(TbSessionName).Create(&dto).Error
+}
+
+func (repo sessionMySQLRepo) Find(ctx context.Context, id uuid.UUID) (*domain.Session, error) {
+	var dto SessionDTO
+
+	if err := repo.db.Table(TbSessionName).Where("id = ?", id).First(&dto).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, common.ErrRecordNotFound
+		}
+
+		return nil, err
+	}
+
+	return dto.ToEntity()
 }

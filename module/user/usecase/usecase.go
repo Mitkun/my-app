@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"my-app/module/user/domain"
 )
 
@@ -57,6 +58,7 @@ type UserRepository interface {
 
 type UserQueryRepository interface {
 	FindByEmail(ctx context.Context, email string) (*domain.User, error)
+	Find(ctx context.Context, id uuid.UUID) (*domain.User, error)
 }
 
 type UserCommandRepository interface {
@@ -69,6 +71,7 @@ type SessionRepository interface {
 }
 
 type SessionQueryRepository interface {
+	Find(ctx context.Context, id uuid.UUID) (*domain.Session, error)
 }
 
 type SessionCommandRepository interface {

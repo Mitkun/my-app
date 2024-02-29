@@ -13,12 +13,13 @@ type User struct {
 	password  string
 	salt      string
 	role      Role
+	status    string
 }
 
-func NewUser(id uuid.UUID, firstName string, lastName string, email string, password string, salt string, role Role) (*User, error) {
+func NewUser(id uuid.UUID, firstName string, lastName string, email string, password string, salt string, role Role, status string) (*User, error) {
 	// TODO validate param
 
-	return &User{id: id, firstName: firstName, lastName: lastName, email: email, password: password, salt: salt, role: role}, nil
+	return &User{id: id, firstName: firstName, lastName: lastName, email: email, password: password, salt: salt, role: role, status: status}, nil
 }
 
 func (u User) Id() uuid.UUID {
@@ -47,6 +48,10 @@ func (u User) Salt() string {
 
 func (u User) Role() Role {
 	return u.role
+}
+
+func (u User) Status() string {
+	return u.status
 }
 
 type Role int
