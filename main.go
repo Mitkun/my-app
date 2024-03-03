@@ -74,8 +74,6 @@ func main() {
 
 	}
 
-	//userUC := usecase.NewUseCase(repository.NewUserRepo(db), repository.NewSessionMySQLRepo(db), &common.Hashes{}, tokenProvider)
-
 	userUseCase := usecase.UseCaseWithBuilder(builder.NewSimpleBuilder(db, tokenProvider))
 
 	httpservice.NewUserService(userUseCase).Routes(v1)
@@ -85,23 +83,3 @@ func main() {
 		return
 	} // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
-
-//type fakeAuthClient struct{}
-//
-//func (fakeAuthClient) IntrospectToken(ctx context.Context, assessToken string) (common.Requester, error) {
-//	return common.NewRequester(
-//		uuid.MustParse("018dd9c5-3da2-710a-aa53-9ba16fb8d451"),
-//		uuid.MustParse("018ddf53-d3aa-793f-bde7-dc9611970497"),
-//		"Thiện",
-//		"Trương Cong",
-//		"user",
-//		"activated",
-//	), nil
-//}
-
-//type mockSessionRepo struct {
-//}
-//
-//func (m mockSessionRepo) Create(ctx context.Context, data *domain.Session) error {
-//	return nil
-//}
