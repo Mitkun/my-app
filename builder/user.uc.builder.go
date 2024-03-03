@@ -25,7 +25,7 @@ func (s simpleBuilder) BuildUserCmdRepo() usecase.UserCommandRepository {
 }
 
 func (simpleBuilder) BuildHashes() usecase.Hashes {
-	return &common.Hasher{}
+	return &common.Hashes{}
 }
 
 func (s simpleBuilder) BuildTokenProvider() usecase.TokenProvider {
@@ -37,6 +37,10 @@ func (s simpleBuilder) BuildSessionQueryRepo() usecase.SessionQueryRepository {
 }
 
 func (s simpleBuilder) BuildSessionCmdRepo() usecase.SessionCommandRepository {
+	return repository.NewSessionMySQLRepo(s.db)
+}
+
+func (s simpleBuilder) BuildSessionRepo() usecase.SessionRepository {
 	return repository.NewSessionMySQLRepo(s.db)
 }
 

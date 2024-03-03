@@ -1,9 +1,7 @@
 package main
 
 import (
-	"context"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"
@@ -33,10 +31,10 @@ func main() {
 
 	//r.Use(middleware.RequireAuth())
 
-	jwtCecret := os.Getenv("JWT_SECRET")
+	jwtSecret := os.Getenv("JWT_SECRET")
 
-	tokenProvider := component.NewJWTProvider(jwtCecret,
-		60*60*24*7, 60*60*24*24)
+	tokenProvider := component.NewJWTProvider(jwtSecret,
+		60*60*24*7, 60*60*24*14)
 
 	authClient := usecase.NewIntrospectUC(repository.NewUserRepo(db), repository.NewSessionMySQLRepo(db), tokenProvider)
 
@@ -48,6 +46,18 @@ func main() {
 			"message":   "pong",
 			"requester": requester.LastName(),
 		})
+	})
+
+	r.DELETE("/v1/revoke-token", middleware.RequireAuth(authClient), func(c *gin.Context) {
+		requester := c.MustGet(common.KeyRequester).(common.Requester)
+
+		repo := repository.NewSessionMySQLRepo(db)
+		if err := repo.Delete(c.Request.Context(), requester.TokenId()); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"data": true})
 	})
 
 	// Setup dependencies
@@ -64,27 +74,30 @@ func main() {
 
 	}
 
-	//userUC := usecase.NewUseCase(repository.NewUserRepo(db), repository.NewSessionMySQLRepo(db), &common.Hasher{}, tokenProvider)
+	//userUC := usecase.NewUseCase(repository.NewUserRepo(db), repository.NewSessionMySQLRepo(db), &common.Hashes{}, tokenProvider)
 
 	userUseCase := usecase.UseCaseWithBuilder(builder.NewSimpleBuilder(db, tokenProvider))
 
 	httpservice.NewUserService(userUseCase).Routes(v1)
 
-	r.Run(":3000") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	err = r.Run(":3000")
+	if err != nil {
+		return
+	} // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
 
-type fakeAuthClient struct{}
-
-func (fakeAuthClient) IntrospectToken(ctx context.Context, assessToken string) (common.Requester, error) {
-	return common.NewRequester(
-		uuid.MustParse("018dd9c5-3da2-710a-aa53-9ba16fb8d451"),
-		uuid.MustParse("018ddf53-d3aa-793f-bde7-dc9611970497"),
-		"Thiện",
-		"Trương Cong",
-		"user",
-		"acttivated",
-	), nil
-}
+//type fakeAuthClient struct{}
+//
+//func (fakeAuthClient) IntrospectToken(ctx context.Context, assessToken string) (common.Requester, error) {
+//	return common.NewRequester(
+//		uuid.MustParse("018dd9c5-3da2-710a-aa53-9ba16fb8d451"),
+//		uuid.MustParse("018ddf53-d3aa-793f-bde7-dc9611970497"),
+//		"Thiện",
+//		"Trương Cong",
+//		"user",
+//		"activated",
+//	), nil
+//}
 
 //type mockSessionRepo struct {
 //}

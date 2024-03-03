@@ -84,7 +84,7 @@ func (j *jwtx) IssueToken(ctx context.Context, id, sub string) (token string, er
 	now := time.Now().UTC()
 
 	claims := jwt.RegisteredClaims{
-		Issuer:    sub,
+		Subject:   sub,
 		ExpiresAt: jwt.NewNumericDate(now.Add(time.Second * time.Duration(j.expireTokenInSeconds))),
 		NotBefore: jwt.NewNumericDate(now),
 		IssuedAt:  jwt.NewNumericDate(now),

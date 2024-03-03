@@ -30,7 +30,7 @@ type SessionDTO struct {
 }
 
 func (dto SessionDTO) ToEntity() (*domain.Session, error) {
-	s := domain.NewSession(dto.Id, dto.UserId, dto.RefreshToken, dto.RefreshExpAt, dto.AccessExpAt)
+	s := domain.NewSession(dto.Id, dto.UserId, dto.RefreshToken, dto.AccessExpAt, dto.RefreshExpAt)
 
 	return s, nil
 }

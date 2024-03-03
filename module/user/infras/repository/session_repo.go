@@ -44,3 +44,25 @@ func (repo sessionMySQLRepo) Find(ctx context.Context, id uuid.UUID) (*domain.Se
 
 	return dto.ToEntity()
 }
+
+func (repo sessionMySQLRepo) FindByRefreshToken(ctx context.Context, rt string) (*domain.Session, error) {
+	var dto SessionDTO
+
+	if err := repo.db.Table(TbSessionName).Where("refresh_token = ?", rt).First(&dto).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, common.ErrRecordNotFound
+		}
+
+		return nil, err
+	}
+
+	return dto.ToEntity()
+}
+
+func (repo sessionMySQLRepo) Delete(ctx context.Context, id uuid.UUID) error {
+	if err := repo.db.Table(TbSessionName).Where("id = ?", id).Delete(nil).Error; err != nil {
+		return err
+	}
+
+	return nil
+}

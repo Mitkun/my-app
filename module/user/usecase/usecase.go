@@ -9,6 +9,7 @@ import (
 type UseCase interface {
 	Register(ctx context.Context, dto EmailPasswordRegistrationDTO) error
 	LoginEmailPassword(ctx context.Context, dto EmailPasswordLoginDTO) (*TokenResponseDTO, error)
+	RefreshToken(ctx context.Context, refreshToken string) (*TokenResponseDTO, error)
 }
 
 type Hashes interface {
@@ -26,6 +27,7 @@ type TokenProvider interface {
 type useCase struct {
 	*loginEmailPasswordUC
 	*registerUC
+	*refreshTokenUC
 }
 
 type Builder interface {
@@ -35,21 +37,23 @@ type Builder interface {
 	BuildTokenProvider() TokenProvider
 	BuildSessionQueryRepo() SessionQueryRepository
 	BuildSessionCmdRepo() SessionCommandRepository
+	BuildSessionRepo() SessionRepository
 }
 
 func UseCaseWithBuilder(b Builder) UseCase {
 	return &useCase{
 		loginEmailPasswordUC: NewLoginEmailPasswordUC(b.BuildUserQueryRepo(), b.BuildSessionCmdRepo(), b.BuildTokenProvider(), b.BuildHashes()),
 		registerUC:           NewRegisterUC(b.BuildUserQueryRepo(), b.BuildUserCmdRepo(), b.BuildHashes()),
+		refreshTokenUC:       NewRefreshTokenUC(b.BuildUserQueryRepo(), b.BuildSessionRepo(), b.BuildTokenProvider(), b.BuildHashes()),
 	}
 }
 
-func NewUseCase(userRepo UserRepository, sessionRepo SessionRepository, hashes Hashes, tokenProvider TokenProvider) UseCase {
-	return &useCase{
-		loginEmailPasswordUC: NewLoginEmailPasswordUC(userRepo, sessionRepo, tokenProvider, hashes),
-		registerUC:           NewRegisterUC(userRepo, userRepo, hashes),
-	}
-}
+//func NewUseCase(userRepo UserRepository, sessionRepo SessionRepository, hashes Hashes, tokenProvider TokenProvider) UseCase {
+//	return &useCase{
+//		loginEmailPasswordUC: NewLoginEmailPasswordUC(userRepo, sessionRepo, tokenProvider, hashes),
+//		registerUC:           NewRegisterUC(userRepo, userRepo, hashes),
+//	}
+//}
 
 type UserRepository interface {
 	UserQueryRepository
@@ -72,8 +76,10 @@ type SessionRepository interface {
 
 type SessionQueryRepository interface {
 	Find(ctx context.Context, id uuid.UUID) (*domain.Session, error)
+	FindByRefreshToken(ctx context.Context, rt string) (*domain.Session, error)
 }
 
 type SessionCommandRepository interface {
 	Create(ctx context.Context, data *domain.Session) error
+	Delete(ctx context.Context, id uuid.UUID) error
 }
