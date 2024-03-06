@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/google/uuid"
+	"github.com/viettranx/service-context/core"
 	"gorm.io/gorm"
 	"my-app/common"
 	"my-app/module/user/domain"
@@ -26,7 +27,7 @@ func (repo userMySQLRepo) FindByEmail(ctx context.Context, email string) (*domai
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, common.ErrRecordNotFound
 		}
-		return nil, err
+		return nil, core.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	return dto.ToEntity()

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/pkg/errors"
+	sctx "github.com/viettranx/service-context"
 	"time"
 )
 
@@ -64,21 +65,21 @@ func (j *jwtx) InitFlags() {
 	)
 }
 
-//func (j *jwtx) Activate(_ sctx.ServiceContext) error {
-//	if len(j.secret) < 32 {
-//		return errors.WithStack(ErrSecretKeyNotValid)
-//	}
-//
-//	if j.expireTokenInSeconds <= 60 {
-//		return errors.WithStack(ErrTokenLifeTimeTooShort)
-//	}
-//
-//	return nil
-//}
-//
-//func (j *jwtx) Stop() error {
-//	return nil
-//}
+func (j *jwtx) Activate(_ sctx.ServiceContext) error {
+	if len(j.secret) < 32 {
+		return errors.WithStack(ErrSecretKeyNotValid)
+	}
+
+	if j.expireTokenInSeconds <= 60 {
+		return errors.WithStack(ErrTokenLifeTimeTooShort)
+	}
+
+	return nil
+}
+
+func (j *jwtx) Stop() error {
+	return nil
+}
 
 func (j *jwtx) IssueToken(ctx context.Context, id, sub string) (token string, err error) {
 	now := time.Now().UTC()
@@ -123,4 +124,11 @@ func (j *jwtx) ParseToken(ctx context.Context, tokenString string) (claims *jwt.
 	}
 
 	return &rc, nil
+}
+
+type TokenProvider interface {
+	IssueToken(ctx context.Context, id, sub string) (token string, err error)
+	ParseToken(ctx context.Context, tokenString string) (claims *jwt.RegisteredClaims, err error)
+	TokenExpireInSeconds() int
+	RefreshExpireInSeconds() int
 }
