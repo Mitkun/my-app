@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"github.com/google/uuid"
+	"my-app/common"
 	"my-app/module/user/domain"
 )
 
@@ -51,7 +52,7 @@ func UseCaseWithBuilder(b Builder) UseCase {
 //func NewUseCase(userRepo UserRepository, sessionRepo SessionRepository, hashes Hashes, tokenProvider TokenProvider) UseCase {
 //	return &useCase{
 //		loginEmailPasswordUC: NewLoginEmailPasswordUC(userRepo, sessionRepo, tokenProvider, hashes),
-//		registerUC:           NewRegisterUC(userRepo, userRepo, hashes),
+//		changeAvtUC:           NewChangeAvtUC(userRepo, userRepo, hashes),
 //	}
 //}
 
@@ -67,6 +68,7 @@ type UserQueryRepository interface {
 
 type UserCommandRepository interface {
 	Create(ctx context.Context, data *domain.User) error
+	Update(ctx context.Context, data *domain.User) error
 }
 
 type SessionRepository interface {
@@ -82,4 +84,9 @@ type SessionQueryRepository interface {
 type SessionCommandRepository interface {
 	Create(ctx context.Context, data *domain.Session) error
 	Delete(ctx context.Context, id uuid.UUID) error
+}
+
+type ImageRepository interface {
+	Find(ctx context.Context, id uuid.UUID) (*common.Image, error)
+	SetImageStatusActivated(ctx context.Context, id uuid.UUID) error
 }

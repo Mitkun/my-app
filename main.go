@@ -9,6 +9,7 @@ import (
 	"my-app/common"
 	"my-app/component"
 	"my-app/middleware"
+	"my-app/module/image"
 	"my-app/module/product/controller"
 	productusecase "my-app/module/product/domain/usecase"
 	productmysql "my-app/module/product/repository/mysql"
@@ -23,6 +24,7 @@ func newService() sctx.ServiceContext {
 		sctx.WithName("G11"),
 		sctx.WithComponent(gormc.NewGormDB(common.KeyGorm, "")),
 		sctx.WithComponent(component.NewJWT(common.KeyJWT)),
+		sctx.WithComponent(component.NewAWSS3Provider(common.KeyAWSS3)),
 	)
 }
 
@@ -80,7 +82,8 @@ func main() {
 
 	userUseCase := usecase.UseCaseWithBuilder(builder.NewSimpleBuilder(db, tokenProvider))
 
-	httpservice.NewUserService(userUseCase, service).Routes(v1)
+	httpservice.NewUserService(userUseCase, service).SetAuthClient(authClient).Routes(v1)
+	image.NewHTTPService(service).Routes(v1)
 
 	err := r.Run(":3000")
 	if err != nil {
