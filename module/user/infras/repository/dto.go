@@ -3,6 +3,7 @@ package repository
 import (
 	"github.com/google/uuid"
 	"my-app/module/user/domain"
+	"my-app/utils"
 	"time"
 )
 
@@ -15,10 +16,11 @@ type UserDTO struct {
 	Salt      string    `gorm:"column:salt;"`
 	Role      string    `gorm:"column:role;"`
 	Status    string    `gorm:"column:status;"`
+	Avatar    *string   `gorm:"column:avatar;"`
 }
 
 func (dto *UserDTO) ToEntity() (user *domain.User, err error) {
-	return domain.NewUser(dto.Id, dto.FirstName, dto.LastName, dto.Email, dto.Password, dto.Salt, domain.GetRole(dto.Role), dto.Status)
+	return domain.NewUser(dto.Id, dto.FirstName, dto.LastName, dto.Email, dto.Password, dto.Salt, domain.GetRole(dto.Role), dto.Status, utils.StringFromPointer(dto.Avatar))
 }
 
 type SessionDTO struct {

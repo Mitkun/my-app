@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 	"my-app/common"
 	"my-app/module/user/domain"
+	"my-app/utils"
 )
 
 const TbName = "users"
@@ -59,6 +60,26 @@ func (repo userMySQLRepo) Create(ctx context.Context, data *domain.User) error {
 	}
 
 	if err := repo.db.Table(TbName).Create(&dto).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo userMySQLRepo) Update(ctx context.Context, data *domain.User) error {
+	dto := UserDTO{
+		Id:        data.Id(),
+		FirstName: data.FirstName(),
+		LastName:  data.LastName(),
+		Email:     data.Email(),
+		Password:  data.Password(),
+		Salt:      data.Salt(),
+		Role:      data.Role().String(),
+		Status:    data.Status(),
+		Avatar:    utils.GetStrPt(data.Avatar()),
+	}
+
+	if err := repo.db.Table(TbName).Where("id = ?", data.Id()).Updates(&dto).Error; err != nil {
 		return err
 	}
 
