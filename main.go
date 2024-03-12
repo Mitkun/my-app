@@ -12,6 +12,7 @@ import (
 	"my-app/module/image"
 	"my-app/module/product/controller"
 	productusecase "my-app/module/product/domain/usecase"
+	"my-app/module/product/infras/producthttp"
 	productmysql "my-app/module/product/repository/mysql"
 	"my-app/module/user/infras/httpservice"
 	"my-app/module/user/infras/repository"
@@ -84,6 +85,7 @@ func main() {
 
 	httpservice.NewUserService(userUseCase, service).SetAuthClient(authClient).Routes(v1)
 	image.NewHTTPService(service).Routes(v1)
+	producthttp.NewHttpService(service).Routes(v1)
 
 	err := r.Run(":3000")
 	if err != nil {
