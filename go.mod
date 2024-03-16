@@ -3,7 +3,7 @@ module my-app
 go 1.21
 
 require (
-	github.com/aws/aws-sdk-go v1.50.33
+	github.com/aws/aws-sdk-go v1.50.30
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/google/uuid v1.6.0
