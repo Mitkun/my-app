@@ -10,9 +10,14 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	sctx "github.com/viettranx/service-context"
+	"log"
 	"net/http"
 	"time"
 )
+
+type UploadProvider interface {
+	SaveFileUploaded(ctx context.Context, data []byte, dst string) error
+}
 
 type s3Provider struct {
 	id         string
@@ -63,7 +68,35 @@ func (p *s3Provider) InitFlags() {
 	)
 }
 
-func NewAWSS3Provider(id string) *s3Provider { return &s3Provider{id: id} }
+func NewAWSS3Provider(id string) *s3Provider {
+	return &s3Provider{id: id}
+}
+
+func NewS3Provider(bucketName string, region string, apiKey string, secret string, domain string) *s3Provider {
+	provider := &s3Provider{
+		bucketName: bucketName,
+		region:     region,
+		apiKey:     apiKey,
+		secret:     secret,
+		domain:     domain,
+	}
+
+	s3Session, err := session.NewSession(&aws.Config{
+		Region: aws.String(provider.region),
+		Credentials: credentials.NewStaticCredentials(
+			provider.apiKey, // Access key ID
+			provider.secret, // Secret access key
+			""),             // Token can be ignore
+	})
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	provider.session = s3Session
+
+	return provider
+}
 
 func (p *s3Provider) Activate(_ sctx.ServiceContext) error {
 	s3Session, err := session.NewSession(&aws.Config{
@@ -73,6 +106,7 @@ func (p *s3Provider) Activate(_ sctx.ServiceContext) error {
 			p.secret, // Secret access key
 			""),      // Token can be ignore
 	})
+
 	if err != nil {
 		return err
 	}
@@ -80,8 +114,9 @@ func (p *s3Provider) Activate(_ sctx.ServiceContext) error {
 	p.session = s3Session
 	return nil
 }
-
-func (p *s3Provider) Stop() error { return nil }
+func (p *s3Provider) Stop() error {
+	return nil
+}
 
 func (p *s3Provider) SaveFileUploaded(ctx context.Context, data []byte, dst string) error {
 	fileBytes := bytes.NewReader(data)
@@ -94,6 +129,7 @@ func (p *s3Provider) SaveFileUploaded(ctx context.Context, data []byte, dst stri
 		ContentType: aws.String(fileType),
 		Body:        fileBytes,
 	})
+
 	if err != nil {
 		return err
 	}
@@ -104,15 +140,14 @@ func (p *s3Provider) SaveFileUploaded(ctx context.Context, data []byte, dst stri
 func (p *s3Provider) GetUploadPresignedURL(ctx context.Context) string {
 	req, _ := s3.New(p.session).PutObjectRequest(&s3.PutObjectInput{
 		Bucket: aws.String(p.bucketName),
-		Key:    aws.String(fmt.Sprintf("img/%d", time.Now().UnixMilli())),
+		Key:    aws.String(fmt.Sprintf("img/%d", time.Now().UnixNano())),
 		ACL:    aws.String("private"),
 	})
-
+	//
 	url, _ := req.Presign(time.Second * 60)
 
 	return url
 }
 
 func (p *s3Provider) GetDomain() string { return p.domain }
-
-func (p *s3Provider) GetName() string { return "aws_s3" }
+func (*s3Provider) GetName() string     { return "aws_s3" }
