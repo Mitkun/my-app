@@ -28,7 +28,7 @@ func newService() sctx.ServiceContext {
 		sctx.WithComponent(gormc.NewGormDB(common.KeyGorm, "")),
 		sctx.WithComponent(component.NewJWT(common.KeyJWT)),
 		sctx.WithComponent(component.NewAWSS3Provider(common.KeyAWSS3)),
-		sctx.WithComponent(component.NewAWSS3Provider(common.KeyConfig)),
+		sctx.WithComponent(component.NewConfigComponent(common.KeyConfig)),
 	)
 }
 
