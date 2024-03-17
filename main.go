@@ -4,6 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	sctx "github.com/viettranx/service-context"
 	"github.com/viettranx/service-context/component/gormc"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"my-app/builder"
 	"my-app/common"
@@ -88,14 +90,27 @@ func main() {
 
 	httpservice.NewUserService(userUseCase, service).SetAuthClient(authClient).Routes(v1)
 	image.NewHTTPService(service).Routes(v1)
-	productHTTP.NewHttpService(service).Routes(v1)
 	cateHTTP.NewCategoryHttpService(service).Routes(v1)
 
 	go func() {
-		_ = grpcservice.NewCateGRPCService(8080, service).Start()
+		config := service.MustGet(common.KeyConfig).(interface{ GetGRPCServPort() int })
+		_ = grpcservice.NewCateGRPCService(config.GetGRPCServPort(), service).Start()
 	}()
 
-	err := r.Run(":3000")
+	opts := grpc.WithTransportCredentials(insecure.NewCredentials())
+
+	config := service.MustGet(common.KeyConfig).(interface{ GetGRPCServer() string })
+
+	cc, err := grpc.Dial(config.GetGRPCServer(), opts)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	prodService := productHTTP.NewHttpService(service)
+	prodService.SetGRPCClientConn(cc)
+	prodService.Routes(v1)
+
+	err = r.Run(":3000")
 	if err != nil {
 		return
 	} // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")

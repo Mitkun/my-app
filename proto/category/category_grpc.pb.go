@@ -26,7 +26,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CategoryClient interface {
-	GetCategory(ctx context.Context, in *GetCateIdsRequest, opts ...grpc.CallOption) (*CateIdsResponse, error)
+	GetCategoriesByIds(ctx context.Context, in *GetCateIdsRequest, opts ...grpc.CallOption) (*CateIdsResponse, error)
 }
 
 type categoryClient struct {
@@ -37,7 +37,7 @@ func NewCategoryClient(cc grpc.ClientConnInterface) CategoryClient {
 	return &categoryClient{cc}
 }
 
-func (c *categoryClient) GetCategory(ctx context.Context, in *GetCateIdsRequest, opts ...grpc.CallOption) (*CateIdsResponse, error) {
+func (c *categoryClient) GetCategoriesByIds(ctx context.Context, in *GetCateIdsRequest, opts ...grpc.CallOption) (*CateIdsResponse, error) {
 	out := new(CateIdsResponse)
 	err := c.cc.Invoke(ctx, Category_GetCategory_FullMethodName, in, out, opts...)
 	if err != nil {
