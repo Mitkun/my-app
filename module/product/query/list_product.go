@@ -15,7 +15,7 @@ type ProductDTO struct {
 	CategoryId uuid.UUID    `gorm:"column:category_id" json:"category_id"`
 	Name       string       `gorm:"column:name" json:"name"`
 	Type       string       `gorm:"column:type" json:"type"`
-	Category   *CategoryDTO `json:"category"`
+	Category   *CategoryDTO `gorm:"-" json:"category"`
 	//Description string      `gorm:"column:description" json:"description"`
 }
 
@@ -36,11 +36,12 @@ type ListProductParam struct {
 }
 
 type listProductQuery struct {
-	sctx sctx.ServiceContext
+	sctx    sctx.ServiceContext
+	catRepo CategoryRepository
 }
 
-func NewListProductQuery(sctx sctx.ServiceContext) listProductQuery {
-	return listProductQuery{sctx: sctx}
+func NewListProductQuery(sctx sctx.ServiceContext, catRepo CategoryRepository) listProductQuery {
+	return listProductQuery{sctx: sctx, catRepo: catRepo}
 }
 
 func (q listProductQuery) Execute(ctx context.Context, param *ListProductParam) ([]ProductDTO, error) {
@@ -62,10 +63,31 @@ func (q listProductQuery) Execute(ctx context.Context, param *ListProductParam) 
 
 	offset := param.Limit * (param.Page - 1)
 
-	db = db.Preload("Category")
+	//db = db.Preload("Category")
 
 	if err := db.Offset(offset).Limit(param.Limit).Order("id desc").Find(&products).Error; err != nil {
 		return nil, core.ErrBadRequest.WithError("cannot list product").WithDebug(err.Error())
+	}
+
+	var catIds []uuid.UUID
+
+	for i := range products {
+		catIds = append(catIds, products[i].CategoryId)
+	}
+
+	categories, err := q.catRepo.FindWithIds(ctx, catIds)
+	if err != nil {
+		return nil, core.ErrBadRequest.WithError("cannot list product").WithDebug(err.Error())
+	}
+
+	cateMap := make(map[uuid.UUID]*CategoryDTO)
+
+	for i, cate := range categories {
+		cateMap[cate.Id] = &categories[i]
+	}
+
+	for i, prod := range products {
+		products[i].Category = cateMap[prod.CategoryId]
 	}
 
 	return products, nil

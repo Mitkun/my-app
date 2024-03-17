@@ -9,10 +9,12 @@ import (
 	"my-app/common"
 	"my-app/component"
 	"my-app/middleware"
+	"my-app/module/category/infras/grpcservice"
+	cateHTTP "my-app/module/category/infras/httpservice"
 	"my-app/module/image"
 	"my-app/module/product/controller"
 	productusecase "my-app/module/product/domain/usecase"
-	"my-app/module/product/infras/producthttp"
+	productHTTP "my-app/module/product/infras/httpservice"
 	productmysql "my-app/module/product/repository/mysql"
 	"my-app/module/user/infras/httpservice"
 	"my-app/module/user/infras/repository"
@@ -26,6 +28,7 @@ func newService() sctx.ServiceContext {
 		sctx.WithComponent(gormc.NewGormDB(common.KeyGorm, "")),
 		sctx.WithComponent(component.NewJWT(common.KeyJWT)),
 		sctx.WithComponent(component.NewAWSS3Provider(common.KeyAWSS3)),
+		sctx.WithComponent(component.NewConfigComponent(common.KeyConfig)),
 	)
 }
 
@@ -85,7 +88,12 @@ func main() {
 
 	httpservice.NewUserService(userUseCase, service).SetAuthClient(authClient).Routes(v1)
 	image.NewHTTPService(service).Routes(v1)
-	producthttp.NewHttpService(service).Routes(v1)
+	productHTTP.NewHttpService(service).Routes(v1)
+	cateHTTP.NewCategoryHttpService(service).Routes(v1)
+
+	go func() {
+		_ = grpcservice.NewCateGRPCService(8080, service).Start()
+	}()
 
 	err := r.Run(":3000")
 	if err != nil {
