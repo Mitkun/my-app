@@ -213,8 +213,8 @@ var file_proto_category_proto_goTypes = []interface{}{
 }
 var file_proto_category_proto_depIdxs = []int32{
 	2, // 0: protorpc.CateIdsResponse.data:type_name -> protorpc.CategoryDTO
-	0, // 1: protorpc.Category.GetCategory:input_type -> protorpc.GetCateIdsRequest
-	1, // 2: protorpc.Category.GetCategory:output_type -> protorpc.CateIdsResponse
+	0, // 1: protorpc.Category.GetCategoriesByIds:input_type -> protorpc.GetCateIdsRequest
+	1, // 2: protorpc.Category.GetCategoriesByIds:output_type -> protorpc.CateIdsResponse
 	2, // [2:3] is the sub-list for method output_type
 	1, // [1:2] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
