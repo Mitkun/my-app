@@ -5,7 +5,7 @@ package protorpc;
 option go_package = "category/";
 
 service Category {
-  rpc GetCategory (GetCateIdsRequest) returns (CateIdsResponse) {}
+  rpc GetCategoriesByIds (GetCateIdsRequest) returns (CateIdsResponse) {}
 }
 
 message GetCateIdsRequest {

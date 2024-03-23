@@ -4,7 +4,9 @@ import (
 	"context"
 	"github.com/viettranx/service-context/core"
 	"my-app/common"
+	"my-app/common/asyncjob"
 	"my-app/module/user/domain"
+	"time"
 )
 
 type changeAvtUC struct {
@@ -38,8 +40,17 @@ func (uc *changeAvtUC) ChangeAvatar(ctx context.Context, dto SingleImageDTO) err
 
 	go func() {
 		defer common.Recover()
-		//TODO retry if fail
-		_ = uc.imgRepo.SetImageStatusActivated(ctx, dto.ImageId)
+
+		job := asyncjob.NewJob(
+			func(ctx context.Context) error {
+				return uc.imgRepo.SetImageStatusActivated(ctx, dto.ImageId)
+			},
+			asyncjob.WithName("SetImageStatusActivated"),
+			asyncjob.WithRetriesDuration([]time.Duration{time.Second * 2, time.Second * 4, time.Second * 8}),
+		)
+
+		asyncjob.NewGroup(false, job).Run(ctx)
+
 	}()
 
 	return nil

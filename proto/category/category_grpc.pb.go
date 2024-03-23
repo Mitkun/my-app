@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Category_GetCategory_FullMethodName = "/protorpc.Category/GetCategory"
+	Category_GetCategory_FullMethodName = "/protorpc.Category/GetCategoriesByIds"
 )
 
 // CategoryClient is the client API for Category service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CategoryClient interface {
-	GetCategory(ctx context.Context, in *GetCateIdsRequest, opts ...grpc.CallOption) (*CateIdsResponse, error)
+	GetCategoriesByIds(ctx context.Context, in *GetCateIdsRequest, opts ...grpc.CallOption) (*CateIdsResponse, error)
 }
 
 type categoryClient struct {
@@ -37,7 +37,7 @@ func NewCategoryClient(cc grpc.ClientConnInterface) CategoryClient {
 	return &categoryClient{cc}
 }
 
-func (c *categoryClient) GetCategory(ctx context.Context, in *GetCateIdsRequest, opts ...grpc.CallOption) (*CateIdsResponse, error) {
+func (c *categoryClient) GetCategoriesByIds(ctx context.Context, in *GetCateIdsRequest, opts ...grpc.CallOption) (*CateIdsResponse, error) {
 	out := new(CateIdsResponse)
 	err := c.cc.Invoke(ctx, Category_GetCategory_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -50,7 +50,7 @@ func (c *categoryClient) GetCategory(ctx context.Context, in *GetCateIdsRequest,
 // All implementations must embed UnimplementedCategoryServer
 // for forward compatibility
 type CategoryServer interface {
-	GetCategory(context.Context, *GetCateIdsRequest) (*CateIdsResponse, error)
+	GetCategoriesByIds(context.Context, *GetCateIdsRequest) (*CateIdsResponse, error)
 	mustEmbedUnimplementedCategoryServer()
 }
 
@@ -58,8 +58,8 @@ type CategoryServer interface {
 type UnimplementedCategoryServer struct {
 }
 
-func (UnimplementedCategoryServer) GetCategory(context.Context, *GetCateIdsRequest) (*CateIdsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetCategory not implemented")
+func (UnimplementedCategoryServer) GetCategoriesByIds(context.Context, *GetCateIdsRequest) (*CateIdsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCategoriesByIds not implemented")
 }
 func (UnimplementedCategoryServer) mustEmbedUnimplementedCategoryServer() {}
 
@@ -80,14 +80,14 @@ func _Category_GetCategory_Handler(srv interface{}, ctx context.Context, dec fun
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CategoryServer).GetCategory(ctx, in)
+		return srv.(CategoryServer).GetCategoriesByIds(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
 		FullMethod: Category_GetCategory_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CategoryServer).GetCategory(ctx, req.(*GetCateIdsRequest))
+		return srv.(CategoryServer).GetCategoriesByIds(ctx, req.(*GetCateIdsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -100,7 +100,7 @@ var Category_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*CategoryServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetCategory",
+			MethodName: "GetCategoriesByIds",
 			Handler:    _Category_GetCategory_Handler,
 		},
 	},
